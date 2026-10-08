@@ -1,0 +1,68 @@
+[
+  {
+    "incident_id": "INC-001",
+    "title": "Payment API timeout caused by database connection pool exhaustion",
+    "service": "payment-service",
+    "severity": "SEV-2",
+    "symptoms": [
+      "Payment API latency increased",
+      "HTTP 504 responses increased",
+      "Database connection pool reached maximum capacity"
+    ],
+    "root_cause": "Long-running database operations caused payment-service database connections to remain occupied, exhausting the connection pool.",
+    "evidence": [
+      "Active database connections reached 30/30",
+      "Database connection timeout errors appeared in payment-service logs",
+      "Database CPU remained below 60%"
+    ],
+    "resolution": [
+      "Terminated long-running database sessions",
+      "Reduced query execution time",
+      "Added connection pool saturation alert"
+    ]
+  },
+  {
+    "incident_id": "INC-002",
+    "title": "Payment latency caused by fraud-service degradation",
+    "service": "payment-service",
+    "severity": "SEV-2",
+    "symptoms": [
+      "Payment requests became slow",
+      "Fraud-service latency increased",
+      "Payment API error rate increased"
+    ],
+    "root_cause": "The downstream fraud-service experienced increased latency and caused synchronous payment requests to wait.",
+    "evidence": [
+      "Fraud-service p95 latency increased significantly",
+      "Database connection pool remained within normal limits",
+      "Payment-service logs showed slow fraud-service calls"
+    ],
+    "resolution": [
+      "Recovered fraud-service capacity",
+      "Added downstream latency alerts",
+      "Added timeout protection"
+    ]
+  },
+  {
+    "incident_id": "INC-003",
+    "title": "Payment failures after application deployment",
+    "service": "payment-service",
+    "severity": "SEV-3",
+    "symptoms": [
+      "Payment error rate increased after deployment",
+      "Application exceptions increased",
+      "Latency increased moderately"
+    ],
+    "root_cause": "A regression in payment validation logic caused repeated application exceptions.",
+    "evidence": [
+      "Error rate increased immediately after deployment",
+      "New application stack traces appeared",
+      "Database and fraud-service metrics remained normal"
+    ],
+    "resolution": [
+      "Rolled back the deployment",
+      "Fixed validation logic",
+      "Added regression tests"
+    ]
+  }
+]

@@ -1,0 +1,12 @@
+services:
+  incident-investigator:
+    build: .
+    container_name: incident-investigator
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./vectorstore:/app/vectorstore
+      - ./data:/app/data
+    restart: unless-stopped

@@ -1,12 +1,17 @@
 import logging
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
+from app.graph import build_graph
 from app.rag import retrieve_context
 from app.schemas import IncidentRequest
-from app.graph import build_graph
 
+
+# --------------------------------------------------
+# Logging
+# --------------------------------------------------
 
 logging.basicConfig(
     level=getattr(
@@ -20,12 +25,33 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+# --------------------------------------------------
+# FastAPI App
+# --------------------------------------------------
+
 app = FastAPI(
     title=settings.app_name,
     version="1.0.0",
     description="AI Production Incident Investigator",
 )
 
+
+# --------------------------------------------------
+# CORS
+# --------------------------------------------------
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# --------------------------------------------------
+# Health Check
+# --------------------------------------------------
 
 @app.get("/health")
 def health_check():
@@ -36,9 +62,18 @@ def health_check():
     }
 
 
+# --------------------------------------------------
+# RAG Search
+# --------------------------------------------------
+
 @app.post("/rag/search")
 def rag_search(request: IncidentRequest):
     try:
+        logger.info(
+            "RAG search started: %s",
+            request.incident,
+        )
+
         context = retrieve_context(
             request.incident,
             k=4,
@@ -58,6 +93,10 @@ def rag_search(request: IncidentRequest):
         ) from exc
 
 
+# --------------------------------------------------
+# Incident Investigation
+# --------------------------------------------------
+
 @app.post("/investigate")
 def investigate(request: IncidentRequest):
     try:
@@ -72,6 +111,10 @@ def investigate(request: IncidentRequest):
                 "incident": request.incident,
                 "attempts": 0,
             }
+        )
+
+        logger.info(
+            "Incident investigation completed"
         )
 
         return {
